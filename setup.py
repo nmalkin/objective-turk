@@ -1,15 +1,16 @@
 from setuptools import setup
 
 setup(name='mturk',
-      version='0.1.7',
+      version='0.2.0',
       description="Utilities to help interact with Amazon's Mechanical Turk API",
       url='http://github.com/nmalkin/turk-scripts',
       author='nmalkin',
       license='BSD',
-      packages=['mturk'],
+      packages=['mturk', 'objective_turk'],
       python_requires='>=3.6',
       install_requires=[
           'boto3>=1.5,<2',
+          'peewee>=3.8'
       ],
       scripts=[
           'bin/approve_assignments',

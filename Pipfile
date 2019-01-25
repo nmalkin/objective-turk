@@ -1,23 +1,20 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [dev-packages]
-
-autopep8 = "*"
 mypy = "*"
 pylint = "*"
 rope = "*"
-
+black = "*"
 
 [packages]
-
 "boto3" = "*"
-
+peewee = "*"
 
 [requires]
-
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true
