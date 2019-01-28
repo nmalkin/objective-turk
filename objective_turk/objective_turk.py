@@ -1,32 +1,61 @@
+import datetime
 import enum
 import json
-from typing import Dict
+import pathlib
+import typing
+import xml.etree.ElementTree
 
-import boto3
 import peewee
 import playhouse.sqlite_ext as peewee_sqlite
 
 import mturk
 
-
-CASCADE = 'CASCADE'
-
-database = peewee_sqlite.SqliteExtDatabase(None)
-
-_environment = None
-_client = None
+CASCADE = "CASCADE"
 
 
 class Environment(enum.Enum):
-    sandbox = 'sandbox'
-    production = 'production'
+    sandbox = "sandbox"
+    production = "production"
 
 
-def init(env: Environment):
+_database: peewee.Database = peewee_sqlite.SqliteExtDatabase(None)
+_environment: typing.Optional[Environment] = None
+_client = None
+
+
+def init(
+    env: Environment, db_path: typing.Union[str, pathlib.Path, None] = None
+) -> None:
+    """
+    Initialize the environment by specifying whether you're operating in production or the sandbox.
+    This prepares (but doesn't instantiate) the AWS MTurk client and specifies the database to use.
+    """
     global _environment
     _environment = env
-    # TODO: initialize the database using the current Turk account and environment - these will be part of the filename (or in a metadata table?) so that after you've init'ed, you don't need to worry about which account is being used
-    database.init('turk.db', pragmas={'foreign_keys': 1})
+
+    if db_path is None:
+        # TODO: maybe take into account the AWS account too
+        db_name = f"turk_{_environment.value}.db"
+        db_path = pathlib.Path(".") / db_name
+
+    _database.init(db_path, pragmas={"foreign_keys": 1})
+
+
+def init_sandbox() -> None:
+    """
+    Convenience function for initializing in the sandbox environment
+    """
+    init(Environment.sandbox)
+
+
+class EnvironmentNotInitializedError(Exception):
+    """
+    An error raised when the environment hasn't been initialized yet
+    """
+
+    def __init__(self):
+        message = "environment not initialized yet. Please call `init`."
+        super().__init__(message)
 
 
 def client():
@@ -38,40 +67,47 @@ def client():
     global _environment, _client
 
     if _environment is None:
-        raise Exception('environment not initialized yet. Please call `init`.')
+        raise EnvironmentNotInitializedError()
 
     if _client is None:
-        sandbox = _environment is Environment.sandbox
+        sandbox: bool = _environment is Environment.sandbox
         _client = mturk.get_client(sandbox)
 
     return _client
 
 
-from datetime import date, datetime
-
-
 class SerializableJSONField(peewee_sqlite.JSONField):
+    """
+    A JSONField extended to not break when a date or datetime object tries to be serialized
+    """
+
     @staticmethod
     def serialize_dates(obj):
-        if isinstance(obj, (datetime, date)):
+        if isinstance(obj, (datetime.datetime, datetime.date)):
             return obj.isoformat()
         raise TypeError("Type %s not serializable" % type(obj))
 
+    # pylint: disable=inconsistent-return-statements
+    # This follows the model of peewee_sqlite.JSONField, which also has inconsistent return statements.
     def db_value(self, value):
         if value is not None:
             return json.dumps(value, default=self.serialize_dates)
 
 
 class BaseModel(peewee.Model):
+    """
+    The base for all of our MTurk models
+    """
+
     def __str__(self):
         return self.id
 
     class Meta:
-        database = database
+        database = _database
 
 
 class Worker(BaseModel):
-    id = peewee.CharField(max_length=256, primary_key=True, column_name='WorkerId')
+    id = peewee.CharField(max_length=256, primary_key=True, column_name="WorkerId")
 
 
 class QualificationType(BaseModel):
@@ -80,23 +116,48 @@ class QualificationType(BaseModel):
     """
 
     id = peewee.CharField(
-        max_length=256, primary_key=True, column_name='QualificationTypeId'
+        max_length=256, primary_key=True, column_name="QualificationTypeId"
     )
     details = SerializableJSONField()
 
+    def assign(self, worker: Worker, send_notification: bool = False) -> None:
+        """
+        Associate the current qualification type with the given worker
+
+        See:
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mturk.html#MTurk.Client.associate_qualification_with_worker
+        """
+        client().associate_qualification_with_worker(
+            QualificationTypeId=self.id,
+            WorkerId=worker.id,
+            SendNotification=send_notification,
+        )
+
+        qualification = client().get_qualification_score(
+            QualificationTypeId=self.id, WorkerId=worker.id
+        )["Qualification"]
+        Qualification.new_from_response(qualification)
+
+    def download_qualifications(self) -> None:
+        """
+        Download all qualifications for this QualificationType
+        """
+        Qualification.download_qualification_type(self)
+
     @classmethod
-    def download_all(cls):
+    def download_all(cls) -> None:
+        """
+        Download all QualificationTypes owned by the current MTurk account
+        """
         for qualification_type in mturk.get_pages(
             client().list_qualification_types,
-            'QualificationTypes',
+            "QualificationTypes",
             MustBeOwnedByCaller=True,
             MustBeRequestable=False,
         ):
             cls.insert(
-                id=qualification_type['QualificationTypeId'], details=qualification_type
+                id=qualification_type["QualificationTypeId"], details=qualification_type
             ).on_conflict_replace().execute()
-
-        return cls.select()
 
 
 class Qualification(BaseModel):
@@ -109,40 +170,50 @@ class Qualification(BaseModel):
     qualification_type = peewee.ForeignKeyField(
         QualificationType,
         on_delete=CASCADE,
-        backref='qualifications',
-        column_name='QualificationTypeId',
+        backref="qualifications",
+        column_name="QualificationTypeId",
     )
     worker = peewee.ForeignKeyField(
-        Worker, on_delete=CASCADE, backref='qualifications', column_name='WorkerId'
+        Worker, on_delete=CASCADE, backref="qualifications", column_name="WorkerId"
     )
     GrantTime = peewee.CharField(max_length=256)
     Status = peewee.CharField(
-        max_length=16, choices=(('Granted', 'Granted'), ('Revoked', 'Revoked'))
+        max_length=16, choices=(("Granted", "Granted"), ("Revoked", "Revoked"))
     )
     details = SerializableJSONField()
 
     def __str__(self):
-        return 'QualificationTypeId %s granted to %s' % (
+        return "QualificationTypeId %s granted to %s" % (
             self.qualification_type_id,
             self.worker_id,
         )
 
     @classmethod
+    def new_from_response(cls, qualification: typing.Dict) -> None:
+        cls.insert(
+            qualification_id=qualification["QualificationTypeId"],
+            worker=Worker.get_or_create(id=qualification["WorkerId"])[0],
+            GrantTime=qualification["GrantTime"].isoformat(),
+            Status=qualification["Status"],
+            details=qualification,
+        ).on_conflict_replace().execute()
+
+    @classmethod
     def download_qualification_type(cls, qualification_type: QualificationType):
+        """
+        Download all qualifications for the given QualificationType
+        """
         for qualification in mturk.get_pages(
             client().list_workers_with_qualification_type,
-            'Qualifications',
+            "Qualifications",
             QualificationTypeId=qualification_type.id,
         ):
-            cls.insert(
-                qualification_id=qualification['QualificationTypeId'],
-                worker=Worker.get_or_create(id=qualification['WorkerId'])[0],
-                GrantTime=qualification['GrantTime'].isoformat(),
-                Status=qualification['Status'],
-                details=qualification,
-            ).on_conflict_replace().execute()
+            cls.new_from_response(qualification)
 
         return cls.select().where(cls.qualification_type == qualification_type.id)
+
+
+TypeHit = typing.TypeVar("TypeHit", bound="Hit")
 
 
 class Hit(BaseModel):
@@ -150,31 +221,44 @@ class Hit(BaseModel):
     http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_HITDataStructureArticle.html
     """
 
-    id = peewee.CharField(max_length=256, primary_key=True, column_name='HITId')
-    hit_type = peewee.CharField(max_length=256, column_name='HITTypeId')
+    id = peewee.CharField(max_length=256, primary_key=True, column_name="HITId")
+    hit_type = peewee.CharField(max_length=256, column_name="HITTypeId")
     details = SerializableJSONField()
 
     @classmethod
-    def new_from_response(cls, hit):
-        id = hit['HITId']
+    def _new_from_response(cls: typing.Type[TypeHit], hit: typing.Dict) -> TypeHit:
+        hit_id = hit["HITId"]
         (
-            cls.insert(id=hit['HITId'], hit_type=hit['HITTypeId'], details=hit)
+            cls.insert(id=hit["HITId"], hit_type=hit["HITTypeId"], details=hit)
             .on_conflict_replace()
             .execute()
         )
-        return cls.get(cls.id == id)
+        return cls.get(cls.id == hit_id)
 
     @classmethod
-    def download(cls, hit_id: str):
+    def download(cls, hit_id: str) -> TypeHit:
+        """
+        Download and return HIT specified by given HITId
+        """
         response = client().get_hit(HITId=hit_id)
-        hit = response['HIT']
-        return cls.new_from_response(hit)
+        hit = response["HIT"]
+        return cls._new_from_response(hit)
 
     @classmethod
-    def download_all(cls):
-        for hit in mturk.get_pages(client().list_hits, 'HITs'):
-            cls.new_from_response(hit)
-        return cls.select()
+    def download_all(cls) -> None:
+        """
+        Download all HITs known to MTurk
+
+        Remember that MTurk only retains more recent HITs.
+        """
+        for hit in mturk.get_pages(client().list_hits, "HITs"):
+            cls._new_from_response(hit)
+
+    def download_assignments(self) -> None:
+        """
+        Download all the assignments for the current HIT
+        """
+        Assignment.download_assignments_for_hit(self)
 
 
 class Assignment(BaseModel):
@@ -182,23 +266,73 @@ class Assignment(BaseModel):
     https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_AssignmentDataStructureArticle.html
     """
 
-    id = peewee.CharField(max_length=256, primary_key=True, column_name='AssignmentId')
+    id = peewee.CharField(max_length=256, primary_key=True, column_name="AssignmentId")
     worker = peewee.ForeignKeyField(
-        Worker, on_delete=CASCADE, backref='assignments', column_name='WorkerId'
+        Worker, on_delete=CASCADE, backref="assignments", column_name="WorkerId"
     )
     hit = peewee.ForeignKeyField(
-        Hit, on_delete=CASCADE, backref='assignments', column_name='HITId'
+        Hit, on_delete=CASCADE, backref="assignments", column_name="HITId"
     )
     AssignmentStatus = peewee.CharField(
         max_length=256,
         choices=(
-            ('Submitted', 'Submitted'),
-            ('Approved', 'Approved'),
-            ('Rejected', 'Rejected'),
+            ("Submitted", "Submitted"),
+            ("Approved", "Approved"),
+            ("Rejected", "Rejected"),
         ),
     )
     details = SerializableJSONField()
 
+    @classmethod
+    def download_assignments_for_hit(cls, hit: Hit) -> None:
+        """
+        Download all the assignments for the given HIT
+        """
+        for assignment in mturk.get_pages(
+            client().list_assignments_for_hit, "Assignments", HITId=hit.id
+        ):
+            worker, _ = Worker.get_or_create(id=assignment["WorkerId"])
+            Assignment.insert(
+                id=assignment["AssignmentId"],
+                worker=worker,
+                hit=hit,
+                AssignmentStatus=assignment["AssignmentStatus"],
+                details=assignment,
+            ).on_conflict_replace().execute()
 
-def create_db():
-    database.create_tables([Worker, QualificationType, Qualification, Hit, Assignment])
+    def __str__(self) -> str:
+        return f"Assignment {self.id} by Worker {self.worker} for HIT {self.hit}"
+
+    def approve(self) -> None:
+        """
+        Approve the current assignment via the MTurk API
+        """
+        client().approve_assignment(AssignmentId=self.id)
+
+    @property
+    def answers(self) -> typing.Dict:
+        """
+        Return a response's answers as a dictionary object
+        """
+        answer_xml = self.details["Answer"]
+        root = xml.etree.ElementTree.fromstring(answer_xml)
+
+        answer_dict = {}
+        for answer in root:
+            field = answer.find(
+                "{http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2005-10-01/QuestionFormAnswers.xsd}QuestionIdentifier"
+            )
+            value = answer.find(
+                "{http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2005-10-01/QuestionFormAnswers.xsd}FreeText"
+            )
+            if field is not None and value is not None:
+                answer_dict[field.text] = value.text
+
+        return answer_dict
+
+
+def create_db() -> None:
+    if _environment is None:
+        raise EnvironmentNotInitializedError()
+
+    _database.create_tables([Worker, QualificationType, Qualification, Hit, Assignment])

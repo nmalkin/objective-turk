@@ -1,4 +1,3 @@
-import abc
 import logging
 
 import objective_turk
@@ -21,7 +20,7 @@ def get_question(url):
     return EXTERNAL_URL_QUESTION.format(url)
 
 
-class QualificationType(object):
+class QualificationType:
     """
     An Enum for QualificationTypeId constants
     https://github.com/nmalkin/mturk-python/blob/master/mturk/mturk.py#L16
@@ -100,10 +99,12 @@ def create_hit_with_hit_type(hit_type: str, **kwargs):
     new_args.update(HITTypeId=hit_type)
     response = objective_turk.client().create_hit_with_hit_type(**new_args)
     logger.debug(response)
-    return objective_turk.Hit.new_from_response(response['HIT'])
+    #pylint: disable=protected-access
+    return objective_turk.Hit._new_from_response(response['HIT'])
 
 
 def create_hit(**kwargs):
     response = objective_turk.client().create_hit(**kwargs)
     logger.debug(response)
-    return objective_turk.Hit.new_from_response(response['HIT'])
+    #pylint: disable=protected-access
+    return objective_turk.Hit._new_from_response(response['HIT'])
