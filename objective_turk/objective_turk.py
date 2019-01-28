@@ -1,6 +1,7 @@
 import datetime
 import enum
 import json
+import logging
 import pathlib
 import typing
 import xml.etree.ElementTree
@@ -11,6 +12,8 @@ import playhouse.sqlite_ext as peewee_sqlite
 import mturk
 
 CASCADE = "CASCADE"
+
+logger = logging.getLogger(__name__)
 
 
 class Environment(enum.Enum):
@@ -30,6 +33,7 @@ def init(
     Initialize the environment by specifying whether you're operating in production or the sandbox.
     This prepares (but doesn't instantiate) the AWS MTurk client and specifies the database to use.
     """
+    logger.debug("Initializing Objective Turk with %s environment", env.value)
     global _environment
     _environment = env
 
@@ -70,10 +74,26 @@ def client():
         raise EnvironmentNotInitializedError()
 
     if _client is None:
+        logger.debug("initializing AWS boto3 client in %s", _environment)
         sandbox: bool = _environment is Environment.sandbox
         _client = mturk.get_client(sandbox)
 
     return _client
+
+
+def production_warning():
+    """
+    If in production, show a warning that the user is about to do something impactful
+    """
+    if _environment is None:
+        raise EnvironmentNotInitializedError()
+    elif _environment is Environment.production:
+        logger.warning("performing operation with side-effects in production")
+        proceed = None
+        while proceed not in ["y", "n"]:
+            proceed = input("Continue? [y/n]")
+        if proceed == "n":
+            raise Exception("operation canceled")
 
 
 class SerializableJSONField(peewee_sqlite.JSONField):
@@ -127,6 +147,8 @@ class QualificationType(BaseModel):
         See:
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mturk.html#MTurk.Client.associate_qualification_with_worker
         """
+        production_warning()
+
         client().associate_qualification_with_worker(
             QualificationTypeId=self.id,
             WorkerId=worker.id,
@@ -307,6 +329,7 @@ class Assignment(BaseModel):
         """
         Approve the current assignment via the MTurk API
         """
+        production_warning()
         client().approve_assignment(AssignmentId=self.id)
 
     @property
