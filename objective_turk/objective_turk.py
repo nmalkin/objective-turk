@@ -159,7 +159,7 @@ class QualificationType(BaseModel):
         qualification = client().get_qualification_score(
             QualificationTypeId=self.id, WorkerId=worker.id
         )["Qualification"]
-        Qualification.new_from_response(qualification)
+        Qualification.new_from_response(qualification, self)
 
     def download_qualifications(self) -> None:
         """
@@ -213,10 +213,10 @@ class Qualification(BaseModel):
         )
 
     @classmethod
-    def new_from_response(cls, qualification: typing.Dict) -> None:
+    def new_from_response(cls, qualification: typing.Dict, qualification_type: QualificationType) -> None:
         logger.debug('saving Qualification %s', qualification)
         cls.insert(
-            qualification_id=qualification["QualificationTypeId"],
+            qualification_type=qualification_type,
             worker=Worker.get_or_create(id=qualification["WorkerId"])[0],
             GrantTime=qualification["GrantTime"].isoformat(),
             Status=qualification["Status"],
@@ -233,7 +233,7 @@ class Qualification(BaseModel):
             "Qualifications",
             QualificationTypeId=qualification_type.id,
         ):
-            cls.new_from_response(qualification)
+            cls.new_from_response(qualification, qualification_type)
 
         return cls.select().where(cls.qualification_type == qualification_type.id)
 
