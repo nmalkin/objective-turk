@@ -179,7 +179,9 @@ class QualificationType(BaseModel):
             MustBeOwnedByCaller=True,
             MustBeRequestable=False,
         ):
-            logger.debug('saving QualificationType %s', qualification_type)
+            logger.debug(
+                "saving QualificationType %s", qualification_type["QualificationTypeId"]
+            )
             cls.insert(
                 id=qualification_type["QualificationTypeId"], details=qualification_type
             ).on_conflict_replace().execute()
@@ -214,8 +216,14 @@ class Qualification(BaseModel):
         )
 
     @classmethod
-    def new_from_response(cls, qualification: typing.Dict, qualification_type: QualificationType) -> None:
-        logger.debug('saving Qualification %s', qualification)
+    def new_from_response(
+        cls, qualification: typing.Dict, qualification_type: QualificationType
+    ) -> None:
+        logger.debug(
+            "saving Qualification of Worker %s for QualificationType %s",
+            qualification["WorkerId"],
+            qualification_type.id,
+        )
         cls.insert(
             qualification_type=qualification_type,
             worker=Worker.get_or_create(id=qualification["WorkerId"])[0],
@@ -254,7 +262,7 @@ class Hit(BaseModel):
     @classmethod
     def _new_from_response(cls: typing.Type[TypeHit], hit: typing.Dict) -> TypeHit:
         hit_id = hit["HITId"]
-        logger.debug('saving HIT %s', hit_id)
+        logger.debug("saving HIT %s", hit_id)
         (
             cls.insert(id=hit["HITId"], hit_type=hit["HITTypeId"], details=hit)
             .on_conflict_replace()
@@ -319,7 +327,7 @@ class Assignment(BaseModel):
         for assignment in mturk.get_pages(
             client().list_assignments_for_hit, "Assignments", HITId=hit.id
         ):
-            logger.debug('saving assignment %s', assignment["AssignmentId"])
+            logger.debug("saving assignment %s", assignment["AssignmentId"])
             worker, _ = Worker.get_or_create(id=assignment["WorkerId"])
             Assignment.insert(
                 id=assignment["AssignmentId"],
