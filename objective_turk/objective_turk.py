@@ -14,6 +14,7 @@ import mturk
 CASCADE = "CASCADE"
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class Environment(enum.Enum):
