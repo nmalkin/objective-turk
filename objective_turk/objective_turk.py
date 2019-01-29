@@ -130,6 +130,12 @@ class BaseModel(peewee.Model):
 class Worker(BaseModel):
     id = peewee.CharField(max_length=256, primary_key=True, column_name="WorkerId")
 
+    def has_qualification(self, qualification_type: 'QualificationType') -> bool:
+        """
+        Returns true if the given QualificationType has been assigned to the provided worker
+        """
+        return Qualification.exists(qualification_type, self)
+
 
 class QualificationType(BaseModel):
     """
@@ -213,6 +219,21 @@ class Qualification(BaseModel):
         return "QualificationTypeId %s granted to %s" % (
             self.qualification_type_id,
             self.worker_id,
+        )
+
+    @classmethod
+    def exists(cls, qualification_type: QualificationType, worker: Worker) -> bool:
+        """
+        Returns true if the given QualificationType has been assigned to the provided worker
+        """
+        return (
+            # Pylint compares about missing database parameter, but that's not required
+            # pylint: disable=no-value-for-parameter
+            cls.select(
+                (Qualification.qualification_type == qualification_type)
+                & (Qualification.worker == worker)
+            ).count()
+            > 0
         )
 
     @classmethod
