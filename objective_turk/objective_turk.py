@@ -148,6 +148,7 @@ class QualificationType(BaseModel):
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mturk.html#MTurk.Client.associate_qualification_with_worker
         """
         production_warning()
+        logger.debug("assigning qualification to worker %s", worker)
 
         client().associate_qualification_with_worker(
             QualificationTypeId=self.id,
@@ -177,7 +178,7 @@ class QualificationType(BaseModel):
             MustBeOwnedByCaller=True,
             MustBeRequestable=False,
         ):
-            logger.debug('downloaded QualificationType %s', qualification_type)
+            logger.debug('saving QualificationType %s', qualification_type)
             cls.insert(
                 id=qualification_type["QualificationTypeId"], details=qualification_type
             ).on_conflict_replace().execute()
