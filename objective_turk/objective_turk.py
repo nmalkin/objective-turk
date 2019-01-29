@@ -177,6 +177,7 @@ class QualificationType(BaseModel):
             MustBeOwnedByCaller=True,
             MustBeRequestable=False,
         ):
+            logger.debug('downloaded QualificationType %s', qualification_type)
             cls.insert(
                 id=qualification_type["QualificationTypeId"], details=qualification_type
             ).on_conflict_replace().execute()
@@ -212,6 +213,7 @@ class Qualification(BaseModel):
 
     @classmethod
     def new_from_response(cls, qualification: typing.Dict) -> None:
+        logger.debug('saving Qualification %s', qualification)
         cls.insert(
             qualification_id=qualification["QualificationTypeId"],
             worker=Worker.get_or_create(id=qualification["WorkerId"])[0],
@@ -250,6 +252,7 @@ class Hit(BaseModel):
     @classmethod
     def _new_from_response(cls: typing.Type[TypeHit], hit: typing.Dict) -> TypeHit:
         hit_id = hit["HITId"]
+        logger.debug('saving HIT %s', hit_id)
         (
             cls.insert(id=hit["HITId"], hit_type=hit["HITTypeId"], details=hit)
             .on_conflict_replace()
@@ -280,6 +283,7 @@ class Hit(BaseModel):
         """
         Download all the assignments for the current HIT
         """
+        logger.debug("downloading assignments for Hit %s", self)
         Assignment.download_assignments_for_hit(self)
 
 
@@ -313,6 +317,7 @@ class Assignment(BaseModel):
         for assignment in mturk.get_pages(
             client().list_assignments_for_hit, "Assignments", HITId=hit.id
         ):
+            logger.debug('saving assignment %s', assignment["AssignmentId"])
             worker, _ = Worker.get_or_create(id=assignment["WorkerId"])
             Assignment.insert(
                 id=assignment["AssignmentId"],
