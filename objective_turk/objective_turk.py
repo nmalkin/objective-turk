@@ -2,6 +2,7 @@ import datetime
 import enum
 import json
 import logging
+import os
 import pathlib
 import typing
 import xml.etree.ElementTree
@@ -64,6 +65,18 @@ def init_sandbox() -> None:
     Convenience function for initializing in the sandbox environment
     """
     init(Environment.sandbox)
+
+
+def init_from_env_vars() -> None:
+    """
+    Initialize using variables from environment variables
+    """
+    production = os.getenv("TURK_SANDBOX", "").lower() == "false"
+    environment = Environment.production if production else Environment.sandbox
+
+    profile = os.getenv("AWS_PROFILE", "turk")
+    db_path = pathlib.Path(".") / f"{profile}_{environment.value}.db"
+    init(environment, db_path)
 
 
 class EnvironmentNotInitializedError(Exception):
@@ -301,8 +314,7 @@ class Hit(BaseModel):
         will subsequently be out-of-date
         """
         client().update_expiration_for_hit(
-            HITId=self.id,
-            ExpireAt=datetime.datetime.now()
+            HITId=self.id, ExpireAt=datetime.datetime.now()
         )
         self.download(self.id)
 
