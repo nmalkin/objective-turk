@@ -32,7 +32,8 @@ def print_production_warning() -> None:
     """
     Warn about running in production
     """
-    warning = """*******************************************************************************
+    warning = """
+*******************************************************************************
     THIS CLIENT IS RUNNING IN PRODUCTION
 *******************************************************************************"""
     logger.warning(warning)
