@@ -13,7 +13,7 @@ EXTERNAL_URL_QUESTION = """<?xml version="1.0"?>
 """
 
 
-def get_question(url):
+def get_external_question(url: str):
     """
     Return a Question string for an External URL HIT pointing to the given URL.
     """

@@ -6,7 +6,7 @@ if __name__ == "__main__":
     hit = create_hit.create_hit(
         Title='Test',
         Description='test',
-        Question=create_hit.get_question('https://www.example.com'),
+        Question=create_hit.get_external_question('https://www.example.com'),
         Reward='0.50',
         AssignmentDurationInSeconds=3600,
         LifetimeInSeconds=3600 * 24 * 7,
