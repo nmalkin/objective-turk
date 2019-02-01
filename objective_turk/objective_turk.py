@@ -313,6 +313,8 @@ class Hit(BaseModel):
         WARNING: the details of the current object (in particular its Expiration)
         will subsequently be out-of-date
         """
+        production_confirmation()
+
         client().update_expiration_for_hit(
             HITId=self.id, ExpireAt=datetime.datetime.now()
         )
