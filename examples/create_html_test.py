@@ -1,5 +1,4 @@
 import objective_turk
-import objective_turk.create_hit as create_hit
 
 QUESTION = """<?xml version="1.0"?>
 <HTMLQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2011-11-11/HTMLQuestion.xsd">
@@ -76,7 +75,7 @@ test test test test test
 
 if __name__ == "__main__":
     objective_turk.init(objective_turk.Environment.sandbox)
-    hit = create_hit.create_hit(
+    hit = objective_turk.create_hit(
         Title='Test',
         Description='test',
         Reward='0.50',
@@ -84,7 +83,7 @@ if __name__ == "__main__":
         LifetimeInSeconds=3600 * 24 * 7,
         MaxAssignments=10,
         Keywords='survey, testing',
-        QualificationRequirements=create_hit.get_qualifications(),
+        QualificationRequirements=objective_turk.get_qualifications(),
         Question=QUESTION
     )
 
