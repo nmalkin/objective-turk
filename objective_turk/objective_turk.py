@@ -31,9 +31,9 @@ def print_production_warning() -> None:
     """
     Warn about running in production
     """
-    warning = '''*******************************************************************************
+    warning = """*******************************************************************************
     THIS CLIENT IS RUNNING IN PRODUCTION
-*******************************************************************************'''
+*******************************************************************************"""
     logger.warning(warning)
 
 
@@ -143,7 +143,7 @@ class BaseModel(peewee.Model):
 class Worker(BaseModel):
     id = peewee.CharField(max_length=256, primary_key=True, column_name="WorkerId")
 
-    def has_qualification(self, qualification_type: 'QualificationType') -> bool:
+    def has_qualification(self, qualification_type: "QualificationType") -> bool:
         """
         Returns true if the given QualificationType has been assigned to the provided worker
         """
