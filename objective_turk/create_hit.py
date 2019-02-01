@@ -20,7 +20,7 @@ def get_external_question(url: str):
     return EXTERNAL_URL_QUESTION.format(url)
 
 
-class QualificationType:
+class BuiltinQualificationType:
     """
     An Enum for QualificationTypeId constants
     https://github.com/nmalkin/mturk-python/blob/master/mturk/mturk.py#L16
@@ -48,13 +48,13 @@ MINIMUM_PERCENTAGE_APPROVED = 95
 def get_qualifications(exclude: str = None, include: str = None):
     qualifications = [
         {
-            'QualificationTypeId': QualificationType.LOCALE,
+            'QualificationTypeId': BuiltinQualificationType.LOCALE,
             'Comparator': 'EqualTo',
             'LocaleValues': [{'Country': 'US'}],
             'RequiredToPreview': True,
         },
         {
-            'QualificationTypeId': QualificationType.P_APPROVED,
+            'QualificationTypeId': BuiltinQualificationType.P_APPROVED,
             'Comparator': 'GreaterThan',
             'IntegerValues': [MINIMUM_PERCENTAGE_APPROVED],
             'RequiredToPreview': True,
