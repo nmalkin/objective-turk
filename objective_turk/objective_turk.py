@@ -293,6 +293,19 @@ class Hit(BaseModel):
     hit_type = peewee.CharField(max_length=256, column_name="HITTypeId")
     details = SerializableJSONField()
 
+    def expire_now(self) -> None:
+        """
+        Update the current HIT to expire now
+
+        WARNING: the details of the current object (in particular its Expiration)
+        will subsequently be out-of-date
+        """
+        client().update_expiration_for_hit(
+            HITId=self.id,
+            ExpireAt=datetime.datetime.now()
+        )
+        self.download(self.id)
+
     @classmethod
     def _new_from_response(cls: typing.Type[TypeHit], hit: typing.Dict) -> TypeHit:
         hit_id = hit["HITId"]
