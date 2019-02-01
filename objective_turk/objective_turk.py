@@ -27,6 +27,16 @@ _environment: typing.Optional[Environment] = None
 _client = None
 
 
+def print_production_warning() -> None:
+    """
+    Warn about running in production
+    """
+    warning = '''*******************************************************************************
+    THIS CLIENT IS RUNNING IN PRODUCTION
+*******************************************************************************'''
+    logger.warning(warning)
+
+
 def init(
     env: Environment, db_path: typing.Union[str, pathlib.Path, None] = None
 ) -> None:
@@ -37,6 +47,9 @@ def init(
     logger.debug("Initializing Objective Turk with %s environment", env.value)
     global _environment
     _environment = env
+
+    if _environment is Environment.production:
+        print_production_warning()
 
     if db_path is None:
         # TODO: maybe take into account the AWS account too
@@ -82,7 +95,7 @@ def client():
     return _client
 
 
-def production_warning():
+def production_confirmation():
     """
     If in production, show a warning that the user is about to do something impactful
     """
@@ -154,7 +167,7 @@ class QualificationType(BaseModel):
         See:
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mturk.html#MTurk.Client.associate_qualification_with_worker
         """
-        production_warning()
+        production_confirmation()
         logger.debug("assigning qualification to worker %s", worker)
 
         client().associate_qualification_with_worker(
@@ -365,7 +378,7 @@ class Assignment(BaseModel):
         """
         Approve the current assignment via the MTurk API
         """
-        production_warning()
+        production_confirmation()
         client().approve_assignment(AssignmentId=self.id)
 
     @property
