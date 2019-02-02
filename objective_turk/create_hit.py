@@ -12,6 +12,14 @@ EXTERNAL_URL_QUESTION = """<?xml version="1.0"?>
 </ExternalQuestion>
 """
 
+HTML_QUESTION = """<?xml version="1.0"?>
+<HTMLQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2011-11-11/HTMLQuestion.xsd">
+<HTMLContent><![CDATA[
+{}
+]]></HTMLContent>
+<FrameHeight>0</FrameHeight>
+</HTMLQuestion>
+"""
 
 def get_external_question(url: str):
     """
@@ -19,6 +27,12 @@ def get_external_question(url: str):
     """
     return EXTERNAL_URL_QUESTION.format(url)
 
+
+def get_html_question(html: str):
+    """
+    Return a Question string for an HTMLQuestion with the given content.
+    """
+    return HTML_QUESTION.format(html)
 
 class BuiltinQualificationType:
     """
