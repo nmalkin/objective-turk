@@ -89,6 +89,12 @@ def get_qualifications(exclude: str = None, include: str = None):
 
 
 def create_hit_with_hit_type(hit_type: str, **kwargs):
+    """
+    Create HIT using provided HITTypeId %s.
+
+    You still need to pass 'LifetimeInSeconds', 'MaxAssignments', 'Question'.
+    Title, Description, Reward, and Keywords from calling script will be ignored.
+    """
     logger.info(
         'creating HIT using HITTypeId %s. Title, Description, Reward, and Keywords from calling script will be ignored.',
         hit_type,
@@ -104,6 +110,12 @@ def create_hit_with_hit_type(hit_type: str, **kwargs):
 
 
 def create_hit(**kwargs):
+    """
+    Create a HIT with the given arguments.
+    
+    For arguments, see:
+    https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mturk.html#MTurk.Client.create_hit
+    """
     response = objective_turk.client().create_hit(**kwargs)
     logger.debug(response)
     #pylint: disable=protected-access
