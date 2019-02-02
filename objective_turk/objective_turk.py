@@ -225,6 +225,7 @@ class QualificationType(BaseModel):
         """
         Create a new, basic QualificationType
         """
+        logger.info("Creating new qualification named %s (%s)", name, description)
         response = client().create_qualification_type(
             Name=name, Description=description, QualificationTypeStatus="Active"
         )
@@ -331,6 +332,9 @@ class Hit(BaseModel):
     hit_type = peewee.CharField(max_length=256, column_name="HITTypeId")
     details = SerializableJSONField()
 
+    def __str__(self):
+        return f"HIT {self.id} (HITType {self.hit_type}"
+
     def expire_now(self) -> None:
         """
         Update the current HIT to expire now
@@ -338,6 +342,7 @@ class Hit(BaseModel):
         WARNING: the details of the current object (in particular its Expiration)
         will subsequently be out-of-date
         """
+        logger.info("Expiring %s", self)
         production_confirmation()
 
         client().update_expiration_for_hit(
@@ -430,6 +435,7 @@ class Assignment(BaseModel):
         """
         Approve the current assignment via the MTurk API
         """
+        logger.info("Approving %s", self)
         production_confirmation()
         client().approve_assignment(AssignmentId=self.id)
 
