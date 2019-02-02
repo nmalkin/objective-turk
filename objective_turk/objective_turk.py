@@ -64,6 +64,8 @@ def init(
         db_name = f"turk_{_environment.value}.db"
         db_path = pathlib.Path(".") / db_name
 
+    logger.debug("Using database file %s", db_path)
+
     _database.init(db_path, pragmas={"foreign_keys": 1})
 
 
