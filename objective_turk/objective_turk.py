@@ -16,6 +16,7 @@ CASCADE = "CASCADE"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+print(logger, __name__)
 
 
 class Environment(enum.Enum):
@@ -202,6 +203,29 @@ class QualificationType(BaseModel):
         Qualification.download_qualification_type(self)
 
     @classmethod
+    def _new_from_response(cls, qualification_type: typing.Dict):
+        logger.debug(
+            "saving QualificationType %s", qualification_type["QualificationTypeId"]
+        )
+        return (
+            cls.insert(
+                id=qualification_type["QualificationTypeId"], details=qualification_type
+            )
+            .on_conflict_replace()
+            .execute()
+        )
+
+    @classmethod
+    def create_qualification_type(cls, name: str, description: str) -> None:
+        """
+        Create a new, basic QualificationType
+        """
+        response = client().create_qualification_type(
+            Name=name, Description=description, QualificationTypeStatus="Active"
+        )
+        cls._new_from_response(response["QualificationType"])
+
+    @classmethod
     def download_all(cls) -> None:
         """
         Download all QualificationTypes owned by the current MTurk account
@@ -212,12 +236,7 @@ class QualificationType(BaseModel):
             MustBeOwnedByCaller=True,
             MustBeRequestable=False,
         ):
-            logger.debug(
-                "saving QualificationType %s", qualification_type["QualificationTypeId"]
-            )
-            cls.insert(
-                id=qualification_type["QualificationTypeId"], details=qualification_type
-            ).on_conflict_replace().execute()
+            cls._new_from_response(qualification_type)
 
 
 class Qualification(BaseModel):
