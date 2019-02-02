@@ -16,7 +16,6 @@ CASCADE = "CASCADE"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-print(logger, __name__)
 
 
 class Environment(enum.Enum):
