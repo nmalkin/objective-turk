@@ -108,7 +108,7 @@ def client():
         raise EnvironmentNotInitializedError()
 
     if _client is None:
-        logger.debug("initializing AWS boto3 client in %s", _environment)
+        logger.debug("Initializing AWS boto3 client in %s", _environment)
         sandbox: bool = _environment is Environment.sandbox
         _client = mturk.get_client(sandbox)
 
@@ -122,7 +122,7 @@ def production_confirmation():
     if _environment is None:
         raise EnvironmentNotInitializedError()
     elif _environment is Environment.production:
-        logger.warning("performing operation with side-effects in production")
+        logger.warning("Performing operation with side-effects in production")
         proceed = None
         while proceed not in ["y", "n"]:
             proceed = input("Continue? [y/n]")
@@ -188,7 +188,7 @@ class QualificationType(BaseModel):
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mturk.html#MTurk.Client.associate_qualification_with_worker
         """
         production_confirmation()
-        logger.debug("assigning qualification to worker %s", worker)
+        logger.debug("Assigning qualification to worker %s", worker)
 
         client().associate_qualification_with_worker(
             QualificationTypeId=self.id,
@@ -210,7 +210,7 @@ class QualificationType(BaseModel):
     @classmethod
     def _new_from_response(cls, qualification_type: typing.Dict):
         logger.debug(
-            "saving QualificationType %s", qualification_type["QualificationTypeId"]
+            "Saving QualificationType %s", qualification_type["QualificationTypeId"]
         )
         return (
             cls.insert(
@@ -292,7 +292,7 @@ class Qualification(BaseModel):
         cls, qualification: typing.Dict, qualification_type: QualificationType
     ) -> None:
         logger.debug(
-            "saving Qualification of Worker %s for QualificationType %s",
+            "Saving Qualification of Worker %s for QualificationType %s",
             qualification["WorkerId"],
             qualification_type.id,
         )
@@ -348,7 +348,7 @@ class Hit(BaseModel):
     @classmethod
     def _new_from_response(cls: typing.Type[TypeHit], hit: typing.Dict) -> TypeHit:
         hit_id = hit["HITId"]
-        logger.debug("saving HIT %s", hit_id)
+        logger.debug("Saving HIT %s", hit_id)
         (
             cls.insert(id=hit["HITId"], hit_type=hit["HITTypeId"], details=hit)
             .on_conflict_replace()
@@ -379,7 +379,7 @@ class Hit(BaseModel):
         """
         Download all the assignments for the current HIT
         """
-        logger.debug("downloading assignments for Hit %s", self)
+        logger.debug("Downloading assignments for Hit %s", self)
         Assignment.download_assignments_for_hit(self)
 
 
@@ -413,7 +413,7 @@ class Assignment(BaseModel):
         for assignment in mturk.get_pages(
             client().list_assignments_for_hit, "Assignments", HITId=hit.id
         ):
-            logger.debug("saving assignment %s", assignment["AssignmentId"])
+            logger.debug("Saving assignment %s", assignment["AssignmentId"])
             worker, _ = Worker.get_or_create(id=assignment["WorkerId"])
             Assignment.insert(
                 id=assignment["AssignmentId"],
