@@ -10,6 +10,7 @@ setup(name='mturk',
       python_requires='>=3.6',
       install_requires=[
           'boto3>=1.5,<2',
+          'colorlog>=4.0',
           'peewee>=3.8'
       ],
       scripts=[

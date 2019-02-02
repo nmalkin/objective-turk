@@ -13,6 +13,7 @@ prospector = "*"
 [packages]
 "boto3" = "*"
 peewee = "*"
+colorlog = "*"
 
 [requires]
 python_version = "3.7"

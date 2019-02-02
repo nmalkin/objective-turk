@@ -10,6 +10,7 @@ import xml.etree.ElementTree
 import peewee
 import playhouse.sqlite_ext as peewee_sqlite
 
+import objective_turk.color_logs
 import mturk
 
 CASCADE = "CASCADE"
@@ -40,12 +41,17 @@ def print_production_warning() -> None:
 
 
 def init(
-    env: Environment, db_path: typing.Union[str, pathlib.Path, None] = None
+    env: Environment,
+    db_path: typing.Union[str, pathlib.Path, None] = None,
+    color_logs: bool = True,
 ) -> None:
     """
     Initialize the environment by specifying whether you're operating in production or the sandbox.
     This prepares (but doesn't instantiate) the AWS MTurk client and specifies the database to use.
     """
+    if color_logs:
+        objective_turk.color_logs.color_logs()
+
     logger.debug("Initializing Objective Turk with %s environment", env.value)
     global _environment
     _environment = env
