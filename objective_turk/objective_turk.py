@@ -127,7 +127,7 @@ def production_confirmation():
         logger.warning("Performing operation with side-effects in production")
         proceed = None
         while proceed not in ["y", "n"]:
-            proceed = input("Continue? [y/n]")
+            proceed = input("Continue? [y/n] ")
         if proceed == "n":
             raise Exception("operation canceled")
 
@@ -189,8 +189,10 @@ class QualificationType(BaseModel):
         See:
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mturk.html#MTurk.Client.associate_qualification_with_worker
         """
+        logger.info("Assigning qualification to worker %s", worker)
+        if send_notification:
+            logger.warning("Will send a notification to the worker")
         production_confirmation()
-        logger.debug("Assigning qualification to worker %s", worker)
 
         client().associate_qualification_with_worker(
             QualificationTypeId=self.id,
@@ -271,8 +273,8 @@ class Qualification(BaseModel):
 
     def __str__(self):
         return "QualificationTypeId %s granted to %s" % (
-            self.qualification_type_id,
-            self.worker_id,
+            self.qualification_type.id,
+            self.worker.id,
         )
 
     @classmethod
@@ -440,6 +442,7 @@ class Assignment(BaseModel):
         logger.info("Approving %s", self)
         production_confirmation()
         client().approve_assignment(AssignmentId=self.id)
+        # TODO: re-download this assignment
 
     @property
     def answers(self) -> typing.Dict:
