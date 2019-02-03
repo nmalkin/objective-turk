@@ -415,6 +415,18 @@ class Assignment(BaseModel):
     details = SerializableJSONField()
 
     @classmethod
+    def _new_from_response(cls, assignment: typing.Dict) -> None:
+        logger.debug("Saving assignment %s", assignment["AssignmentId"])
+        worker, _ = Worker.get_or_create(id=assignment["WorkerId"])
+        Assignment.insert(
+            id=assignment["AssignmentId"],
+            worker=worker,
+            hit=hit,
+            AssignmentStatus=assignment["AssignmentStatus"],
+            details=assignment,
+        ).on_conflict_replace().execute()
+
+    @classmethod
     def download_assignments_for_hit(cls, hit: Hit) -> None:
         """
         Download all the assignments for the given HIT
@@ -422,15 +434,7 @@ class Assignment(BaseModel):
         for assignment in mturk.get_pages(
             client().list_assignments_for_hit, "Assignments", HITId=hit.id
         ):
-            logger.debug("Saving assignment %s", assignment["AssignmentId"])
-            worker, _ = Worker.get_or_create(id=assignment["WorkerId"])
-            Assignment.insert(
-                id=assignment["AssignmentId"],
-                worker=worker,
-                hit=hit,
-                AssignmentStatus=assignment["AssignmentStatus"],
-                details=assignment,
-            ).on_conflict_replace().execute()
+            cls._new_from_response(assignment)
 
     def __str__(self) -> str:
         return f"Assignment {self.id} by Worker {self.worker} for HIT {self.hit}"
@@ -442,7 +446,8 @@ class Assignment(BaseModel):
         logger.info("Approving %s", self)
         production_confirmation()
         client().approve_assignment(AssignmentId=self.id)
-        # TODO: re-download this assignment
+        response = client().get_assignment(AssignmentId=self.id)
+        self._new_from_response(response["Assignment"])
 
     @property
     def answers(self) -> typing.Dict:
