@@ -2,7 +2,7 @@ import logging
 
 import colorlog
 
-import objective_turk
+import objective_turk.objective_turk
 import objective_turk.create_hit
 
 
@@ -24,8 +24,8 @@ def color_logs():
         )
     )
 
-    objective_turk.logger.addHandler(handler)
-    objective_turk.logger.propagate = False
+    objective_turk.objective_turk.logger.addHandler(handler)
+    objective_turk.objective_turk.logger.propagate = False
 
     objective_turk.create_hit.logger.addHandler(handler)
     objective_turk.create_hit.logger.propagate = False
