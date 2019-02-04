@@ -1,6 +1,6 @@
 import logging
 
-import objective_turk
+from objective_turk import objective_turk
 
 logger = logging.getLogger(__name__)
 
