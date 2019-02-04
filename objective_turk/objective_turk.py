@@ -271,6 +271,9 @@ class Qualification(BaseModel):
     )
     details = SerializableJSONField()
 
+    class Meta:
+        primary_key = peewee.CompositeKey("qualification_type", "worker")
+
     def __str__(self):
         return "QualificationTypeId %s granted to %s" % (
             self.qualification_type.id,
