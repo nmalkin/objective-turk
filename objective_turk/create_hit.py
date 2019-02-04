@@ -114,7 +114,7 @@ def create_hit_with_hit_type(hit_type: str, **kwargs):
         hit_type,
     )
     new_args = {
-        arg: kwargs[arg] for arg in ['LifetimeInSeconds', 'MaxAssignments', 'Question']
+        arg: kwargs[arg] for arg in ['LifetimeInSeconds', 'MaxAssignments', 'Question', 'QualificationRequirements']
     }
     new_args.update(HITTypeId=hit_type)
     response = objective_turk.client().create_hit_with_hit_type(**new_args)
