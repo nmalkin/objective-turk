@@ -288,10 +288,12 @@ class Qualification(BaseModel):
         return (
             # Pylint compares about missing database parameter, but that's not required
             # pylint: disable=no-value-for-parameter
-            cls.select(
+            cls.select()
+            .where(
                 (Qualification.qualification_type == qualification_type)
                 & (Qualification.worker == worker)
-            ).count()
+            )
+            .count()
             > 0
         )
 
