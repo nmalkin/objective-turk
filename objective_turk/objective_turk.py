@@ -420,9 +420,13 @@ class Assignment(BaseModel):
     details = SerializableJSONField()
 
     @classmethod
-    def _new_from_response(cls, assignment: typing.Dict) -> None:
+    def _new_from_response(
+        cls, assignment: typing.Dict, hit: typing.Optional[Hit] = None
+    ) -> None:
         logger.debug("Saving assignment %s", assignment["AssignmentId"])
         worker, _ = Worker.get_or_create(id=assignment["WorkerId"])
+        if hit is None:
+            hit = Hit.get_by_id(assignment["HITId"])
         Assignment.insert(
             id=assignment["AssignmentId"],
             worker=worker,
@@ -439,7 +443,7 @@ class Assignment(BaseModel):
         for assignment in mturk.get_pages(
             client().list_assignments_for_hit, "Assignments", HITId=hit.id
         ):
-            cls._new_from_response(assignment)
+            cls._new_from_response(assignment, hit)
 
     def __str__(self) -> str:
         return f"Assignment {self.id} by Worker {self.worker} for HIT {self.hit}"
