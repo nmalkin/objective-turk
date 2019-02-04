@@ -379,6 +379,12 @@ class Hit(BaseModel):
         hit = response["HIT"]
         return cls._new_from_response(hit)
 
+    def redownload(self) -> TypeHit:
+        """
+        Re-download the current HIT
+        """
+        return self.download(self.id)
+
     @classmethod
     def download_all(cls) -> None:
         """
