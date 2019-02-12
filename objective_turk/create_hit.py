@@ -102,22 +102,31 @@ def get_qualifications(exclude: str = None, include: str = None):
     return qualifications
 
 
-def create_hit_with_hit_type(hit_type: str, **kwargs):
+def create_hit_with_hit_type(**kwargs):
     """
-    Create HIT using provided HITTypeId %s.
+    Create HIT using provided HITTypeId.
 
     You still need to pass 'LifetimeInSeconds', 'MaxAssignments', 'Question'.
-    Title, Description, Reward, and Keywords from calling script will be ignored.
+
+    Full list of valid parameters:
+    HITTypeId, MaxAssignments, LifetimeInSeconds, Question, RequesterAnnotation, UniqueRequestToken, AssignmentReviewPolicy, HITReviewPolicy, HITLayoutId, HITLayoutParameters
+
+    Other fields will be ignored:
+    Title, Description, Reward, and Keywords
     """
+    if 'HITTypeId' not in kwargs:
+        raise ValueError('missing required argument HITTypeId')
+    elif 'Question' not in kwargs:
+        raise ValueError('missing required argument Question')
+    elif 'MaxAssignments' not in kwargs:
+        raise ValueError('missing required argument MaxAssignments')
+
+    hit_type = kwargs['HITTypeId']
     logger.info(
         'creating HIT using HITTypeId %s. Title, Description, Reward, and Keywords from calling script will be ignored.',
         hit_type,
     )
-    new_args = {
-        arg: kwargs[arg] for arg in ['LifetimeInSeconds', 'MaxAssignments', 'Question', 'QualificationRequirements']
-    }
-    new_args.update(HITTypeId=hit_type)
-    response = objective_turk.client().create_hit_with_hit_type(**new_args)
+    response = objective_turk.client().create_hit_with_hit_type(**kwargs)
     logger.debug(response)
     #pylint: disable=protected-access
     return objective_turk.Hit._new_from_response(response['HIT'])
