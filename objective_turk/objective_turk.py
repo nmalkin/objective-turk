@@ -377,6 +377,14 @@ class Hit(BaseModel):
         return self.total_assignments == self.completed_assignments
 
     @property
+    def completed(self) -> bool:
+        return self.all_assignments_completed or (
+            self.expired
+            and (self.unreviewed_assignments == 0)
+            and (self.pending_assignments == 0)
+        )
+
+    @property
     def unreviewed_assignments(self) -> int:
         return self.total_assignments - (
             self.available_assignments
