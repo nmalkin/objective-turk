@@ -342,7 +342,47 @@ class Hit(BaseModel):
     details = SerializableJSONField()
 
     def __str__(self):
-        return f"HIT {self.id} (HITType {self.hit_type}"
+        return f"HIT {self.id} (HITType {self.hit_type})"
+
+    @property
+    def expiration_str(self) -> str:
+        return self.details["Expiration"]
+
+    @property
+    def expiration(self) -> datetime.datetime:
+        return datetime.datetime.fromisoformat(self.expiration_str)
+
+    @property
+    def expired(self) -> bool:
+        return datetime.datetime.now(datetime.timezone.utc) > self.expiration
+
+    @property
+    def total_assignments(self) -> int:
+        return self.details["MaxAssignments"]
+
+    @property
+    def pending_assignments(self) -> int:
+        return self.details["NumberOfAssignmentsPending"]
+
+    @property
+    def available_assignments(self) -> int:
+        return self.details["NumberOfAssignmentsAvailable"]
+
+    @property
+    def completed_assignments(self) -> int:
+        return self.details["NumberOfAssignmentsCompleted"]
+
+    @property
+    def all_assignments_completed(self) -> bool:
+        return self.total_assignments == self.completed_assignments
+
+    @property
+    def unreviewed_assignments(self) -> int:
+        return self.total_assignments - (
+            self.available_assignments
+            + self.pending_assignments
+            + self.completed_assignments
+        )
 
     def expire_now(self) -> None:
         """
