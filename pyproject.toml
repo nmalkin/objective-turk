@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "objective_turk"
+version = "0.2.0"
+description = "Utilities to help interact with Amazon's Mechanical Turk API"
+authors = ["nmalkin"]
+license = "BSD-3-Clause"
+
+[tool.poetry.dependencies]
+python = ">=3.6"
+"boto3" = ">=1.5,<2"
+peewee = ">=3.8"
+colorlog = ">=4.0"
+
+[tool.poetry.dev-dependencies]
+mypy = "*"
+pylint = "*"
+rope = "*"
+black = {version="*", allows-prereleases = true }
+prospector = "*"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
