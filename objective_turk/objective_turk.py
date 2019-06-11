@@ -346,6 +346,9 @@ class Hit(BaseModel):
 
     @property
     def expiration_str(self) -> str:
+        """
+        Return the expiration of the HIT, as it is stored by Amazon (an ISO timestamp)
+        """
         return self.details["Expiration"]
 
     @property
