@@ -44,6 +44,7 @@ def init(
     env: Environment,
     db_path: typing.Union[str, pathlib.Path, None] = None,
     color_logs: bool = True,
+    create_database_if_missing: bool = True,
 ) -> None:
     """
     Initialize the environment by specifying whether you're operating in production or the sandbox.
@@ -67,6 +68,9 @@ def init(
     logger.debug("Using database file %s", db_path)
 
     _database.init(db_path, pragmas={"foreign_keys": 1})
+
+    if create_database_if_missing:
+        setup_database()
 
 
 def init_sandbox() -> None:
@@ -537,8 +541,42 @@ class Assignment(BaseModel):
         return answer_dict
 
 
+models: typing.List[peewee.Model] = [
+    Worker,
+    QualificationType,
+    Qualification,
+    Hit,
+    Assignment,
+]
+
+
 def create_db() -> None:
     if _environment is None:
         raise EnvironmentNotInitializedError()
 
-    _database.create_tables([Worker, QualificationType, Qualification, Hit, Assignment])
+    _database.create_tables(models)
+
+
+def setup_database() -> None:
+    """
+    Perform database setup
+    """
+    if _environment is None:
+        raise EnvironmentNotInitializedError()
+
+    some_exist = False
+    all_exist = True
+    for model in models:
+        exists = model.table_exists()
+        some_exist |= exists
+        all_exist &= exists
+
+    if all_exist:
+        logger.debug("Database setup appears complete")
+    elif some_exist:
+        logger.warning(
+            "Database appears only partially set up. This may cause problems later."
+        )
+    else:
+        logger.info("Database not set up. Setting up database!")
+        create_db()
