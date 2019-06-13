@@ -29,6 +29,10 @@ _environment: typing.Optional[Environment] = None
 _client = None
 
 
+def get_current_environment() -> typing.Optional[Environment]:
+    return _environment
+
+
 def print_production_warning() -> None:
     """
     Warn about running in production
