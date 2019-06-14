@@ -381,14 +381,26 @@ class Hit(BaseModel):
 
     @property
     def completed_assignments(self) -> int:
+        """
+        Return the number of completed assignment
+        An assignment is completed if it was accepted or rejected.
+        """
         return self.details["NumberOfAssignmentsCompleted"]
 
     @property
     def all_assignments_completed(self) -> bool:
+        """
+        Return true if every assignment was completed
+        """
         return self.total_assignments == self.completed_assignments
 
     @property
     def completed(self) -> bool:
+        """
+        Return true if every HIT assignment has been "dealt with"
+        Either all of them have been completed,
+        or the HIT has expired and there are no pending or unrevied assignments.
+        """
         return self.all_assignments_completed or (
             self.expired
             and (self.unreviewed_assignments == 0)
