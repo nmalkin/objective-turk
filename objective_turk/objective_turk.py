@@ -528,7 +528,7 @@ class Assignment(BaseModel):
             cls._new_from_response(assignment, hit)
 
     def __str__(self) -> str:
-        return f"Assignment {self.id} by Worker {self.worker} for HIT {self.hit}"
+        return f"Assignment {self.id} by Worker {self.worker} for {self.hit}"
 
     def approve(self) -> None:
         """
