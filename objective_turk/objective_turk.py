@@ -33,6 +33,10 @@ def get_current_environment() -> typing.Optional[Environment]:
     return _environment
 
 
+def get_database() -> peewee.Database:
+    return _database
+
+
 def print_production_warning() -> None:
     """
     Warn about running in production
