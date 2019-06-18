@@ -399,7 +399,7 @@ class Hit(BaseModel):
         """
         Return true if every HIT assignment has been "dealt with"
         Either all of them have been completed,
-        or the HIT has expired and there are no pending or unrevied assignments.
+        or the HIT has expired and there are no pending or unreviewed assignments.
         """
         return self.all_assignments_completed or (
             self.expired
@@ -452,7 +452,8 @@ class Hit(BaseModel):
 
     def redownload(self) -> TypeHit:
         """
-        Re-download the current HIT
+        Re-download the current HIT.
+        WARNING: the current instance will be out-of-date
         """
         return self.download(self.id)
 
