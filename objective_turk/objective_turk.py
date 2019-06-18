@@ -168,7 +168,7 @@ class BaseModel(peewee.Model):
     """
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
     class Meta:
         database = _database
