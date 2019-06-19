@@ -14,6 +14,7 @@ import objective_turk.color_logs
 import mturk
 
 CASCADE = "CASCADE"
+NO_ACTION = "NO ACTION"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -270,12 +271,12 @@ class Qualification(BaseModel):
 
     qualification_type = peewee.ForeignKeyField(
         QualificationType,
-        on_delete=CASCADE,
+        on_delete=NO_ACTION,
         backref="qualifications",
         column_name="QualificationTypeId",
     )
     worker = peewee.ForeignKeyField(
-        Worker, on_delete=CASCADE, backref="qualifications", column_name="WorkerId"
+        Worker, on_delete=NO_ACTION, backref="qualifications", column_name="WorkerId"
     )
     GrantTime = peewee.CharField(max_length=256)
     Status = peewee.CharField(
@@ -486,10 +487,10 @@ class Assignment(BaseModel):
 
     id = peewee.CharField(max_length=256, primary_key=True, column_name="AssignmentId")
     worker = peewee.ForeignKeyField(
-        Worker, on_delete=CASCADE, backref="assignments", column_name="WorkerId"
+        Worker, on_delete=NO_ACTION, backref="assignments", column_name="WorkerId"
     )
     hit = peewee.ForeignKeyField(
-        Hit, on_delete=CASCADE, backref="assignments", column_name="HITId"
+        Hit, on_delete=NO_ACTION, backref="assignments", column_name="HITId"
     )
     AssignmentStatus = peewee.CharField(
         max_length=256,
