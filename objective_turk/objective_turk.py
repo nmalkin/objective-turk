@@ -172,9 +172,19 @@ class BaseModel(peewee.Model):
     """
     The base for all of our MTurk models
     """
+    created_at = peewee.DateTimeField(default=datetime.datetime.now)
+    updated_at = peewee.DateTimeField(default=datetime.datetime.now)
 
     def __str__(self):
         return str(self.id)
+    
+    def save(self, *args, **kwargs):
+        """
+        Save overridden to update updated_at
+        per suggestion in https://stackoverflow.com/a/18533416
+        """
+        self.updated_at = datetime.datetime.now()
+        return super().save(*args, **kwargs)
 
     class Meta:
         database = _database
