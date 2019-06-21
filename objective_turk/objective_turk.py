@@ -396,6 +396,10 @@ class Hit(BaseModel):
         return datetime.datetime.now(datetime.timezone.utc) > self.expiration
 
     @property
+    def updated_after_expiration(self) -> bool:
+        return datetime.datetime.fromisoformat(self.updated_at) > self.expiration
+
+    @property
     def total_assignments(self) -> int:
         return self.details["MaxAssignments"]
 
@@ -438,11 +442,28 @@ class Hit(BaseModel):
         Either all of them have been completed,
         or the HIT has expired and there are no pending or unreviewed assignments.
         """
-        return self.all_assignments_completed or (
-            self.expired
-            and (self.unreviewed_assignments == 0)
-            and (self.pending_assignments == 0)
-        )
+        # If all assigments have been graded, HIT is done
+        if self.all_assignments_completed:
+            return True
+
+        if self.expired:
+            # The HIT is expired.
+
+            if not self.updated_after_expiration:
+                # If our last update was before expiration, then our info is out of date.
+                # (We don't know what happened with any remaining assigments).
+                # The HIT needs to be re-downloaded, but we're not going to do that here.
+                # Instead, we'll just mark it as uncompleted, so that other code can re-download.
+                return False
+
+            if (self.unreviewed_assignments == 0) and (self.pending_assignments == 0):
+                # Our information is up-to-date, and we see that there are no ungraded or active assignments.
+                # That means, any remaining "available" assignments were never taken
+                # (and, since the HIT expired, will never be taken).
+                # Nothing more will happen with this HIT. It's over.
+                return True
+
+        return False
 
     @property
     def unreviewed_assignments(self) -> int:
