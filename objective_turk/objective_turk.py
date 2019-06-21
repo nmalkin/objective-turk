@@ -168,22 +168,30 @@ class SerializableJSONField(peewee_sqlite.JSONField):
             return json.dumps(value, default=self.serialize_dates)
 
 
+def now_utc() -> datetime.datetime:
+    """
+    Return a timezone-aware datetime of the current moment (in UTC)
+    """
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
 class BaseModel(peewee.Model):
     """
     The base for all of our MTurk models
     """
-    created_at = peewee.DateTimeField(default=datetime.datetime.now)
-    updated_at = peewee.DateTimeField(default=datetime.datetime.now)
+
+    created_at = peewee.DateTimeField(default=now_utc)
+    updated_at = peewee.DateTimeField(default=now_utc)
 
     def __str__(self):
         return str(self.id)
-    
+
     def save(self, *args, **kwargs):
         """
         Save overridden to update updated_at
         per suggestion in https://stackoverflow.com/a/18533416
         """
-        self.updated_at = datetime.datetime.now()
+        self.updated_at = now_utc()
         return super().save(*args, **kwargs)
 
     class Meta:
