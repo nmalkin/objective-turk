@@ -138,6 +138,11 @@ def production_confirmation():
         raise EnvironmentNotInitializedError()
     elif _environment is Environment.production:
         logger.warning("Performing operation with side-effects in production")
+
+        skip_confirmation = os.getenv("MTURK_NO_CONFIRM")
+        if skip_confirmation is not None and skip_confirmation.lower() == "true":
+            return
+
         proceed = None
         while proceed not in ["y", "n"]:
             proceed = input("Continue? [y/n] ")
