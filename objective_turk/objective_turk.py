@@ -383,16 +383,25 @@ class Hit(BaseModel):
 
     @property
     def pending_assignments(self) -> int:
+        """
+        Return the number of pending assignments
+        An assignment is pending if it is actively assigned to a worker.
+        """
         return self.details["NumberOfAssignmentsPending"]
 
     @property
     def available_assignments(self) -> int:
+        """
+        Return the number of available assignments
+        An assignment is available if it can be take by a worker.
+        However, after a HIT expires, any assignments not completed will also be listed as available.
+        """
         return self.details["NumberOfAssignmentsAvailable"]
 
     @property
     def completed_assignments(self) -> int:
         """
-        Return the number of completed assignment
+        Return the number of completed assignments
         An assignment is completed if it was accepted or rejected.
         """
         return self.details["NumberOfAssignmentsCompleted"]
