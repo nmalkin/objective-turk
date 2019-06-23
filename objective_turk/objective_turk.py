@@ -594,6 +594,16 @@ class Assignment(BaseModel):
         response = client().get_assignment(AssignmentId=self.id)
         self._new_from_response(response["Assignment"])
 
+    def reject(self, message: str) -> None:
+        """
+        Reject the current assignment via the MTurk API
+        """
+        logger.info("Rejecting %s with message %s", self, message)
+        production_confirmation()
+        client().reject_assignment(AssignmentId=self.id, RequesterFeedback=message)
+        response = client().get_assignment(AssignmentId=self.id)
+        self._new_from_response(response["Assignment"])
+
     @property
     def answers(self) -> typing.Dict:
         """
