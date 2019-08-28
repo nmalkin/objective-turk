@@ -50,7 +50,7 @@ def print_production_warning() -> None:
 
 
 def init(
-    env: Environment,
+    environment: typing.Optional[Environment] = None,
     db_path: typing.Union[str, pathlib.Path, None] = None,
     color_logs: bool = True,
     create_database_if_missing: bool = True,
@@ -62,17 +62,39 @@ def init(
     if color_logs:
         objective_turk.color_logs.color_logs()
 
+    if environment == None:
+        # Infer from environment variable
+        env_production = os.getenv("MTURK_PRODUCTION")
+        if env_production is None:
+            logger.info("MTurk environment not specified; assuming sandbox")
+            environment = Environment.sandbox
+        elif env_production.lower() == "true":
+            environment = Environment.production
+        else:
+            environment = Environment.sandbox
+
     logger.debug("Initializing Objective Turk with %s environment", env.value)
     global _environment
-    _environment = env
+    _environment = environment
 
     if _environment is Environment.production:
         print_production_warning()
 
     if db_path is None:
-        # TODO: maybe take into account the AWS account too
-        db_name = f"turk_{_environment.value}.db"
-        db_path = pathlib.Path(".") / db_name
+        logger.info("inferring database path from environment")
+
+        profile = os.getenv("AWS_PROFILE")
+        if profile is None:
+            logger.critical("AWS_PROFILE not specified")
+            # There are ways other than AWS_PROFILE of specifying AWS configs,
+            # but it's more likely that the caller has just forgotten it
+            # (at least if I'm the caller),
+            # so it's safer to abort.
+            import sys
+            sys.exit(1)
+
+        db_location = os.getenv("MTURK_DB_PATH", ".")
+        db_path = pathlib.Path(db_location) / f"{profile}_{environment.value}.db"
 
     logger.debug("Using database file %s", db_path)
 
@@ -87,31 +109,6 @@ def init_sandbox() -> None:
     Convenience function for initializing in the sandbox environment
     """
     init(Environment.sandbox)
-
-
-def init_from_env() -> None:
-    """
-    Initialize using variables from environment variables
-    """
-    env_production = os.getenv("MTURK_PRODUCTION")
-    if env_production is None:
-        logger.info("MTurk environment not specified; assuming sandbox")
-        environment = Environment.sandbox
-    elif env_production.lower() == "true":
-        environment = Environment.production
-    else:
-        environment = Environment.sandbox
-
-    profile = os.getenv("AWS_PROFILE")
-    if profile is None:
-        logger.critical("AWS_PROFILE not specified")
-        import sys
-        sys.exit(1)
-
-    db_location = os.getenv("MTURK_DB_PATH", ".")
-
-    db_path = pathlib.Path(db_location) / f"{profile}_{environment.value}.db"
-    init(environment, db_path)
 
 
 class EnvironmentNotInitializedError(Exception):
