@@ -89,7 +89,7 @@ def init_sandbox() -> None:
     init(Environment.sandbox)
 
 
-def init_from_env_vars() -> None:
+def init_from_env() -> None:
     """
     Initialize using variables from environment variables
     """

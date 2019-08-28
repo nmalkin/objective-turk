@@ -4,7 +4,7 @@ from .objective_turk import (
     get_database,
     init,
     init_sandbox,
-    init_from_env_vars,
+    init_from_env,
     create_db,
     Worker,
     QualificationType,
