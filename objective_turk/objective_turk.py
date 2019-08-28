@@ -102,7 +102,12 @@ def init_from_env_vars() -> None:
     else:
         environment = Environment.sandbox
 
-    profile = os.getenv("AWS_PROFILE", "turk")
+    profile = os.getenv("AWS_PROFILE")
+    if profile is None:
+        logger.critical("AWS_PROFILE not specified")
+        import sys
+        sys.exit(1)
+
     db_path = pathlib.Path(".") / f"{profile}_{environment.value}.db"
     init(environment, db_path)
 
