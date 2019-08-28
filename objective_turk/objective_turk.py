@@ -93,8 +93,14 @@ def init_from_env_vars() -> None:
     """
     Initialize using variables from environment variables
     """
-    production = os.getenv("TURK_SANDBOX", "").lower() == "false"
-    environment = Environment.production if production else Environment.sandbox
+    env_production = os.getenv("MTURK_PRODUCTION")
+    if env_production is None:
+        logger.info("MTurk environment not specified; assuming sandbox")
+        environment = Environment.sandbox
+    elif env_production.lower() == "true":
+        environment = Environment.production
+    else:
+        environment = Environment.sandbox
 
     profile = os.getenv("AWS_PROFILE", "turk")
     db_path = pathlib.Path(".") / f"{profile}_{environment.value}.db"
