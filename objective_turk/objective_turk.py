@@ -108,7 +108,9 @@ def init_from_env_vars() -> None:
         import sys
         sys.exit(1)
 
-    db_path = pathlib.Path(".") / f"{profile}_{environment.value}.db"
+    db_location = os.getenv("MTURK_DB_PATH", ".")
+
+    db_path = pathlib.Path(db_location) / f"{profile}_{environment.value}.db"
     init(environment, db_path)
 
 
