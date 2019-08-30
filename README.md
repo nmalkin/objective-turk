@@ -1,11 +1,12 @@
 Objective Turk
 ================================================================================
-This library provides an object-oriented API for Amazon Mechanical Turk operations, written in Python. It has two distinctive features:
+This library provides an object-oriented API for Amazon Mechanical Turk operations, written in Python. It has three distinctive features:
 
 1. All major components of the MTurk APIs (Workers, HITs, Assignments, Qualifications) are objects, and you perform operations by calling methods on them.
-2. All data is cached locally in a SQLite database. This allows you to query the relations through the ORM API or directly in SQL, and avoid making (relatively) time-consuming queries to the AWS endpoints.
+2. More importantly, the API exposes the relations between objects; for example, you can call `worker_instance.qualifications` to get that worker's qualifications.
+3. All data is cached locally in a SQLite database. This allows you to query the relations through the ORM API or directly in SQL, and avoid making (relatively) time-consuming queries to the AWS endpoints.
 
-Under the hood, it uses Amazon's [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mturk.html) and the [Peewee ORM](http://docs.peewee-orm.com/en/latest/) library.
+Under the hood, the library uses Amazon's [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mturk.html) and the [Peewee ORM](http://docs.peewee-orm.com/en/latest/) library.
 
 
 Rationale
