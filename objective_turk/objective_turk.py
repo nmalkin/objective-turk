@@ -73,7 +73,7 @@ def init(
         else:
             environment = Environment.sandbox
 
-    logger.debug("Initializing Objective Turk with %s environment", env.value)
+    logger.debug("Initializing Objective Turk with %s environment", environment.value)
     global _environment
     _environment = environment
 
