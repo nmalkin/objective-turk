@@ -6,7 +6,7 @@ setup(name='mturk',
       url='http://github.com/nmalkin/turk-scripts',
       author='nmalkin',
       license='BSD',
-      packages=['mturk', 'objective_turk', 'ot'],
+      packages=['mturk', 'objective_turk'],
       python_requires='>=3.6',
       install_requires=[
           'boto3>=1.5,<2',
