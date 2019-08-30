@@ -62,7 +62,7 @@ def init(
     if color_logs:
         objective_turk.color_logs.color_logs()
 
-    if environment == None:
+    if environment is None:
         # Infer from environment variable
         env_production = os.getenv("MTURK_PRODUCTION")
         if env_production is None:
@@ -91,6 +91,7 @@ def init(
             # (at least if I'm the caller),
             # so it's safer to abort.
             import sys
+
             sys.exit(1)
 
         db_location = os.getenv("MTURK_DB_PATH", ".")
