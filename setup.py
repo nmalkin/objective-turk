@@ -1,9 +1,9 @@
 from setuptools import setup
 
-setup(name='mturk',
+setup(name='objective_turk',
       version='0.2.0',
-      description="Utilities to help interact with Amazon's Mechanical Turk API",
-      url='http://github.com/nmalkin/turk-scripts',
+      description="Object-oriented API to help interact with Amazon's Mechanical Turk",
+      url='http://github.com/nmalkin/objective_turk',
       author='nmalkin',
       license='BSD',
       packages=['mturk', 'objective_turk'],
