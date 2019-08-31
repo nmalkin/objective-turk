@@ -6,47 +6,10 @@ QUESTION = """<?xml version="1.0"?>
     <!DOCTYPE html>
 <html>
   <head>
-    <link
-      href="https://fonts.googleapis.com/css?family=Open+Sans:400,700"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        font-family: "Open Sans", sans-serif;
-        font-size: 16px;
-      }
-      #logo {
-        float: right;
-        width: 1.52604in;
-        height: 1.52604in;
-        margin: 5px;
-      }
-      .container {
-        width: 800px;
-        margin: 0 auto;
-      }
-      input {
-        font-size: 16px;
-        height: 34px;
-        line-height: 20px;
-        text-indent: 4px;
-      }
-      input[type="text"] {
-        width: 300px;
-      }
-      input[type="submit"] {
-        text-align: center;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-    </style>
   </head>
   <body>
     <div class="container">
-      <p><img src="https://brand.berkeley.edu/wp-content/uploads/2016/10/ucbseal_139_540.png" id="logo" /></p>
-      <p>
-test test test test test
-      </p>
+      <p> test test test test test </p>
       <p>
         At the end of the study, you will receive a completion code. Please
         enter it here to receive your payment for participating in this study:
