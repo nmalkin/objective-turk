@@ -27,6 +27,29 @@ Installation
 pip install git+https://github.com/nmalkin/objective_turk.git
 ```
 
+
+Configuration
+-------------
+There are three main configuration options you need to set before using the library:
+
+1. Are you running in the [Sandbox](https://requestersandbox.mturk.com) or in production?
+2. Which AWS account/config are you using?
+3. Where will the database file be stored?
+
+You can set these by passing appropriate values to the `objective_turk.init` function, or you can set them using environment variables. The latter is described below.
+
+### Environment
+Set `MTURK_PRODUCTION=true` to run in production, otherwise the code will use the sandbox.
+
+### AWS account
+Set `AWS_PROFILE=<your-profile-name>` or use one of the alternate AWS configuration methods.
+
+If you have a default profile set up, you can skip this step, but note that this variable is also used to determine the database filename: by default it is `<AWS_PROFILE>_<environment>.db`.
+
+### Path
+By default, the database will be stored in the current working directory, but you can change that by setting `MTURK_DB_PATH=<path>`.
+
+
 Usage
 -----
 ```python
