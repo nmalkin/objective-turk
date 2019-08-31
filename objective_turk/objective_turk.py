@@ -85,14 +85,11 @@ def init(
 
         profile = os.getenv("AWS_PROFILE")
         if profile is None:
-            logger.critical("AWS_PROFILE not specified")
-            # There are ways other than AWS_PROFILE of specifying AWS configs,
-            # but it's more likely that the caller has just forgotten it
-            # (at least if I'm the caller),
-            # so it's safer to abort.
-            import sys
-
-            sys.exit(1)
+            profile = "turk"
+            logger.warning(
+                "AWS_PROFILE not specified. Using default value (%s) in database name.",
+                profile,
+            )
 
         db_location = os.getenv("MTURK_DB_PATH", ".")
         db_path = pathlib.Path(db_location) / f"{profile}_{environment.value}.db"
