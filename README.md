@@ -24,7 +24,7 @@ You'll need to [set up your AWS credentials](https://boto3.readthedocs.io/en/lat
 Installation
 -------------
 ```
-pip install git+https://github.com/nmalkin/objective_turk.git
+pip install git+https://github.com/nmalkin/objective-turk.git
 ```
 
 
