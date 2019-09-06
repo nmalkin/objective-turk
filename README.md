@@ -58,3 +58,6 @@ import objective_turk
 objective_turk.init()
 # TODO
 ```
+
+### Running in production
+The library will ask you to confirm before performing operations with side effects in production. To skip this, you can set `MTURK_NO_CONFIRM=true`
