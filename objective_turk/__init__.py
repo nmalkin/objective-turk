@@ -5,6 +5,7 @@ from .objective_turk import (
     init,
     init_sandbox,
     create_db,
+    notify_workers,
     Worker,
     QualificationType,
     Qualification,

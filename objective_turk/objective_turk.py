@@ -215,6 +215,19 @@ class Worker(BaseModel):
         """
         return Qualification.exists(qualification_type, self)
 
+    def send_message(self, subject: str, message: str) -> None:
+        """
+        Send a message to the worker
+        https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_NotifyWorkersOperation.html
+        """
+        worker_id = str(self.id)
+        logger.info("Sending message to worker %s", worker_id)
+        production_confirmation()
+
+        client().notify_workers(
+            Subject=subject, MessageText=message, WorkerIds=[str(worker_id)]
+        )
+
 
 class QualificationType(BaseModel):
     """
@@ -641,6 +654,22 @@ models: typing.List[peewee.Model] = [
     Hit,
     Assignment,
 ]
+
+
+def notify_workers(
+    subject: str, message: str, workers: typing.Iterable[Worker]
+) -> None:
+    """
+    Send a message to workers
+    https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_NotifyWorkersOperation.html
+
+    Note: per the Amazon API, you can notify up to 100 Workers at a time.
+    """
+    worker_ids = [str(worker.id) for worker in workers]
+    logger.info("Sending message to workers %s", worker_ids)
+    production_confirmation()
+
+    client().notify_workers(Subject=subject, MessageText=message, WorkerIds=worker_ids)
 
 
 def create_db() -> None:
