@@ -646,6 +646,29 @@ class Assignment(BaseModel):
 
         return answer_dict
 
+    def send_bonus(self, amount: str, message: str) -> None:
+        """
+        Pay a bonus to the worker for this assignment
+        https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_SendBonusOperation.html
+        """
+        worker_id = str(self.worker.id)
+        assignment_id = str(self.id)
+
+        logger.info(
+            "Sending bonus of %s to worker %s with reason %s",
+            amount,
+            worker_id,
+            message,
+        )
+        production_confirmation()
+
+        client().send_bonus(
+            WorkerId=worker_id,
+            BonusAmount=amount,
+            AssignmentId=assignment_id,
+            Reason=message,
+        )
+
 
 models: typing.List[peewee.Model] = [
     Worker,
