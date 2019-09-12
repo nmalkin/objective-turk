@@ -30,5 +30,6 @@ def color_logs():
     objective_turk.create_hit.logger.addHandler(handler)
     objective_turk.create_hit.logger.propagate = False
 
-    logging.getLogger().handlers.pop()
+    if len(logging.getLogger().handlers) > 0:
+        logging.getLogger().handlers.pop()
     logging.getLogger().addHandler(handler)
