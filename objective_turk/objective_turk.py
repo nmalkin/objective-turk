@@ -239,7 +239,12 @@ class QualificationType(BaseModel):
     )
     details = SerializableJSONField()
 
-    def assign(self, worker: Worker, send_notification: bool = False) -> None:
+    def assign(
+        self,
+        worker: Worker,
+        send_notification: bool = False,
+        qualification_value: int = 1,
+    ) -> None:
         """
         Associate the current qualification type with the given worker
 
@@ -254,6 +259,7 @@ class QualificationType(BaseModel):
         client().associate_qualification_with_worker(
             QualificationTypeId=self.id,
             WorkerId=worker.id,
+            IntegerValue=qualification_value,
             SendNotification=send_notification,
         )
 

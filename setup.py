@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='objective-turk',
-      version='0.2.2',
+      version='0.2.3',
       description="Object-oriented API to help interact with Amazon's Mechanical Turk",
       url='https://github.com/nmalkin/objective-turk',
       author='nmalkin',
