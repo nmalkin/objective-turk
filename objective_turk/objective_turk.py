@@ -215,6 +215,17 @@ class Worker(BaseModel):
         """
         return Qualification.exists(qualification_type, self)
 
+    def assign_qualification(
+        self,
+        qualification_type: "QualificationType",
+        send_notification: bool = False,
+        qualification_value: int = 1,
+    ) -> None:
+        """
+        Associate the given qualification type with the current worker
+        """
+        qualification_type.assign(self, send_notification, qualification_value)
+
     def send_message(self, subject: str, message: str) -> None:
         """
         Send a message to the worker
