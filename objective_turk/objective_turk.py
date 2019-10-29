@@ -268,6 +268,17 @@ class QualificationType(BaseModel):
         )["Qualification"]
         Qualification.new_from_response(qualification, self)
 
+    @property
+    def name(self) -> str:
+        return self.details["Name"]
+
+    @property
+    def description(self) -> str:
+        return self.details["Description"]
+
+    def __str__(self):
+        return f"{self.id} ({self.name})"
+
     def download_qualifications(self) -> None:
         """
         Download all qualifications for this QualificationType
