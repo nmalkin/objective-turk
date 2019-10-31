@@ -28,6 +28,7 @@ class Environment(enum.Enum):
 _database: peewee.Database = peewee_sqlite.SqliteExtDatabase(None)
 _environment: typing.Optional[Environment] = None
 _client = None
+_init = False
 
 
 def get_current_environment() -> typing.Optional[Environment]:
@@ -54,11 +55,17 @@ def init(
     db_path: typing.Union[str, pathlib.Path, None] = None,
     color_logs: bool = True,
     create_database_if_missing: bool = True,
+    reinit: bool = False,
 ) -> None:
     """
     Initialize the environment by specifying whether you're operating in production or the sandbox.
     This prepares (but doesn't instantiate) the AWS MTurk client and specifies the database to use.
     """
+    global _init
+    if _init and not reinit:
+        logger.warning("initialization already complete")
+        return
+
     if color_logs:
         objective_turk.color_logs.color_logs()
 
@@ -100,6 +107,8 @@ def init(
 
     if create_database_if_missing:
         setup_database()
+    
+    _init = True
 
 
 def init_sandbox() -> None:
